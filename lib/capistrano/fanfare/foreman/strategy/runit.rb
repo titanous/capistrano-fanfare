@@ -11,6 +11,11 @@ module Capistrano
         class Runit < Base
           def export
             svp = configuration[:runit_sv_path]
+            concurrency = if configuration[:foreman_processes]
+                            '--concurrency=' + configuration[:foreman_processes].map { |kv| kv.join('=') }.join(',')
+                          else
+                            ''
+                          end
 
             run [
               "svp=#{svp} &&",
@@ -25,6 +30,7 @@ module Capistrano
                   "${svp}-pre",
                   "--app=#{configuration[:runit_app_name]}",
                   "--log=#{configuration[:shared_path]}/log",
+                  concurrency,
                   "--user=#{configuration[:user]} >/dev/null &&",
 
                 # fix any path references in files back to :runit_sv_path
